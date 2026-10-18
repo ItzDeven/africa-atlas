@@ -182,15 +182,13 @@ function handleGuess(name){
   current=null;
   updatePrompt();
   setTimeout(()=>{
-   if(found.size===queue.length){finishGame();return;}
    if(svg)drawMap();
+   if(found.size===selected.size){setTimeout(finishGame,180);return;}
   },650);
  }else{
   flashMessage('Not quite — highlighted in amber','bad');
-  const el=svg&&svg.select(`[data-country="${CSS.escape(name)}"]`);
-  if(el)el.classed('wrongflash',true);
   const target=svg&&svg.select(`[data-country="${CSS.escape(current)}"]`);
-  if(target)target.classed('correctflash',true);
+  if(target)target.classed('wrongflash',true);
   const missed=current;
   // Wrong answers stay in rotation; the next prompt advances, but missed country returns later.
   const next=queue.find(n=>!found.has(n)&&n!==current);
@@ -202,7 +200,13 @@ function handleGuess(name){
 function finishGame(){
  show('finishScreen');
  const pct=attempts?Math.round(correct/attempts*100):100;
- $('finishSummary').textContent=`You placed all ${found.size} selected countries correctly in ${attempts} ${attempts===1?'attempt':'attempts'} (${pct}% first-try accuracy). Run it back to make the map stick.`;
+ let message;
+ if(pct===100) message='Flawless. You identified every country on the first try — that is map mastery.';
+ else if(pct>=90) message='Excellent work. Your Africa geography knowledge is seriously strong.';
+ else if(pct>=75) message='Well done. You know most of this map; a little more practice will sharpen the tricky spots.';
+ else if(pct>=50) message='Good progress. You got there in the end — replay the same countries to make them stick.';
+ else message='That was a tough round. The good news: every country is now named on the map. Replay this set and build your recall.';
+ $('finishSummary').textContent=`${message} Final map: all ${selected.size} selected countries are named. First-try accuracy: ${pct}% (${correct} correct first clicks out of ${attempts} total clicks).`;
 }
 $('startBtn').addEventListener('click',showCount);
 $('countBack').addEventListener('click',goHome);
